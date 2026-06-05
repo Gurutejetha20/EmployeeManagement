@@ -2,7 +2,6 @@ package EmployeeManagement.messaging;
 
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.jms.core.JmsTemplate;
 
 import java.time.Instant;
@@ -20,8 +19,7 @@ public class employeeeventpublisher {
                 "action", action,
                 "timestamp", Instant.now().toString()
         );
-
         jmsTemplate.convertAndSend("employee.events", event);
-        System.out.println("Event Sent: "+event);   
-        }
+        System.out.println("Event Sent: " + event);
+    }
 }

@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.5</version> <!-- ✅ FIXED -->
+        <version>3.3.5</version>
         <relativePath/>
     </parent>
 
@@ -96,6 +96,14 @@
             <artifactId>jaxb-runtime</artifactId>
         </dependency>
 
+        <!-- Jackson JSR310 — required by JacksonConfig to serialize
+             LocalDate / LocalDateTime as ISO strings ("2024-01-15")
+             instead of throwing errors or returning empty {} objects -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
         <!-- ✅ TESTING (IMPORTANT) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -107,6 +115,22 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- H2 in-memory database — used by ManagementApplicationTests
+             so the context loads without a real MySQL connection -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Spring Security Test — required by EmployeeControllerTest
+             for @WebMvcTest slice with security context -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
 
