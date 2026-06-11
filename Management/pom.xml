@@ -66,7 +66,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- JWT (modern split version - better than 0.9.1) -->
+        <!-- JWT -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
@@ -96,15 +96,13 @@
             <artifactId>jaxb-runtime</artifactId>
         </dependency>
 
-        <!-- Jackson JSR310 — required by JacksonConfig to serialize
-             LocalDate / LocalDateTime as ISO strings ("2024-01-15")
-             instead of throwing errors or returning empty {} objects -->
+        <!-- Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
-        <!-- ✅ TESTING (IMPORTANT) -->
+        <!--TESTING  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -118,16 +116,14 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- H2 in-memory database — used by ManagementApplicationTests
-             so the context loads without a real MySQL connection -->
+        <!-- H2 in-memory -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- Spring Security Test — required by EmployeeControllerTest
-             for @WebMvcTest slice with security context -->
+        <!-- Spring Security Test -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>

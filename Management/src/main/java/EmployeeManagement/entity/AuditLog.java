@@ -1,7 +1,7 @@
 package EmployeeManagement.entity;
 
 import jakarta.persistence.*;
-import java.time.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "audit_logs")
@@ -26,6 +26,12 @@ public class AuditLog {
     @Column
     private String messageId;
 
+    @Column(columnDefinition = "TEXT")
+    private String request;
+
+    @Column(columnDefinition = "TEXT")
+    private String response;
+
     public AuditLog() {}
 
     public Long getId() { return id; }
@@ -45,4 +51,10 @@ public class AuditLog {
 
     public String getMessageId() { return messageId; }
     public void setMessageId(String messageId) { this.messageId = messageId; }
+
+    public String getRequest() { return request; }
+    public void setRequest(String request) { this.request = request; }
+
+    public String getResponse() { return response; }
+    public void setResponse(String response) { this.response = response; }
 }

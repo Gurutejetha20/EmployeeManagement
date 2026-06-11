@@ -1,12 +1,10 @@
 package EmployeeManagement.controller;
 
 import java.util.List;
-
 import EmployeeManagement.service.employeeservice;
 import EmployeeManagement.dto.Employeedto;
 import EmployeeManagement.entity.Employee;
 import EmployeeManagement.config.xmlvalidator;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,43 +14,28 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/employees")
 public class employeecontroller {
 
-    @Autowired
-    private employeeservice service;
-
-    @Autowired
-    private xmlvalidator validator;
+    @Autowired private employeeservice service;
+    @Autowired private xmlvalidator    validator;
 
     @PostMapping(consumes = MediaType.APPLICATION_XML_VALUE,
                  produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> create(@RequestBody String xml) {
-        try {
-            validator.validate(xml);
-            Employeedto dto = validator.convert(xml);
-            return ResponseEntity.ok(service.create(dto));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<Employee> create(@RequestBody String xml) {
+        validator.validate(xml);
+        Employeedto dto = validator.convert(xml);
+        return ResponseEntity.ok(service.create(dto, xml));
     }
 
     @PutMapping(value = "/update/{id}",
                 consumes = MediaType.APPLICATION_XML_VALUE,
                 produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody String xml) {
-        try {
-            validator.validate(xml);
-            return ResponseEntity.ok(service.update(id, validator.convert(xml)));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<Employee> update(@PathVariable Long id, @RequestBody String xml) {
+        validator.validate(xml);
+        return ResponseEntity.ok(service.update(id, validator.convert(xml), xml));
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> get(@PathVariable Long id) {
-        try {
-            return ResponseEntity.ok(service.get(id));
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Employee> get(@PathVariable Long id) {
+        return ResponseEntity.ok(service.get(id));
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -61,12 +44,8 @@ public class employeecontroller {
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
-        try {
-            service.delete(id);
-            return ResponseEntity.ok("Deleted successfully");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<String> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.ok("Employee deleted successfully.");
     }
 }

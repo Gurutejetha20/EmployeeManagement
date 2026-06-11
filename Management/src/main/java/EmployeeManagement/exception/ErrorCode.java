@@ -1,0 +1,16 @@
+package EmployeeManagement.exception;
+
+public enum ErrorCode {
+    EMPLOYEE_NOT_FOUND,
+    EMPLOYEE_EMAIL_DUPLICATE,
+    INVALID_XML,
+    XML_PARSE_ERROR,
+    INVALID_INPUT,
+    UNAUTHORIZED,
+    TOKEN_EXPIRED,
+    TOKEN_MISSING,
+    AUDIT_LOG_FAILURE,
+    JMS_FAILURE,
+    DATABASE_ERROR,
+    INTERNAL_SERVER_ERROR
+}

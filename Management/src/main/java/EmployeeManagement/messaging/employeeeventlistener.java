@@ -26,9 +26,11 @@ public class employeeeventlistener {
             log.setSource("JMS");
             log.setTimestamp(LocalDateTime.now());
             log.setMessageId(UUID.randomUUID().toString());
+            log.setRequest(event.getOrDefault("request", "").toString());
+            log.setResponse(event.getOrDefault("response", "").toString());
             repo.save(log);
         } catch (Exception e) {
-            System.err.println("JMS listener error: " + e.getMessage());
+            System.err.println("[JMS Listener] Failed to save audit log: " + e.getMessage());
         }
     }
 }

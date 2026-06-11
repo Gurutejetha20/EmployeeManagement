@@ -1,7 +1,6 @@
 package EmployeeManagement.service;
 
 import EmployeeManagement.dto.Employeedto;
-import EmployeeManagement.entity.AuditLog;
 import EmployeeManagement.entity.Employee;
 import EmployeeManagement.messaging.employeeeventpublisher;
 import EmployeeManagement.repository.auditlogrepository;
@@ -58,23 +57,25 @@ class EmployeeServiceTest {
         return dto;
     }
 
+    private static final String SAMPLE_XML =
+        "<Employee><name>Test User</name><email>test@example.com</email>" +
+        "<department>IT</department><dateOfJoining>2024-01-15</dateOfJoining></Employee>";
+
     @Test
     void testCreate_returnsSavedEmployee() {
         Employeedto dto = sampleDto();
         Employee saved = savedEmployee(1L, dto);
 
         when(repo.save(any(Employee.class))).thenReturn(saved);
-        when(auditRepo.save(any(AuditLog.class))).thenReturn(new AuditLog());
-        doNothing().when(publisher).publish(anyLong(), anyString());
+        doNothing().when(publisher).publish(anyLong(), anyString(), anyString(), anyString());
 
-        Employee result = service.create(dto);
+        Employee result = service.create(dto, SAMPLE_XML);
 
         assertNotNull(result);
         assertEquals("Test User", result.getName());
         assertEquals("test@example.com", result.getEmail());
         assertEquals("IT", result.getDepartment());
         assertEquals("ACTIVE", result.getStatus());
-
         verify(repo, times(1)).save(any(Employee.class));
     }
 
@@ -84,10 +85,10 @@ class EmployeeServiceTest {
         Employee saved = savedEmployee(1L, dto);
 
         when(repo.save(any(Employee.class))).thenReturn(saved);
-        when(auditRepo.save(any())).thenReturn(new AuditLog());
-        doThrow(new RuntimeException("JMS down")).when(publisher).publish(anyLong(), anyString());
+        doThrow(new RuntimeException("JMS down"))
+            .when(publisher).publish(anyLong(), anyString(), anyString(), anyString());
 
-        assertDoesNotThrow(() -> service.create(dto));
+        assertDoesNotThrow(() -> service.create(dto, SAMPLE_XML));
     }
 
     @Test
@@ -97,6 +98,7 @@ class EmployeeServiceTest {
         Employee e2 = savedEmployee(2L, dto);
 
         when(repo.findAll()).thenReturn(Arrays.asList(e1, e2));
+        doNothing().when(publisher).publish(anyLong(), anyString(), anyString(), anyString());
 
         List<Employee> result = service.getAll();
 
@@ -111,6 +113,7 @@ class EmployeeServiceTest {
         Employee emp = savedEmployee(1L, dto);
 
         when(repo.findById(1L)).thenReturn(Optional.of(emp));
+        doNothing().when(publisher).publish(anyLong(), anyString(), anyString(), anyString());
 
         Employee result = service.get(1L);
 
@@ -140,12 +143,15 @@ class EmployeeServiceTest {
 
         Employee updatedEmp = savedEmployee(1L, updatedDto);
 
+        String updatedXml =
+            "<Employee><name>Updated Name</name><email>updated@example.com</email>" +
+            "<department>HR</department><dateOfJoining>2024-06-01</dateOfJoining></Employee>";
+
         when(repo.findById(1L)).thenReturn(Optional.of(existing));
         when(repo.save(any(Employee.class))).thenReturn(updatedEmp);
-        when(auditRepo.save(any())).thenReturn(new AuditLog());
-        doNothing().when(publisher).publish(anyLong(), anyString());
+        doNothing().when(publisher).publish(anyLong(), anyString(), anyString(), anyString());
 
-        Employee result = service.update(1L, updatedDto);
+        Employee result = service.update(1L, updatedDto, updatedXml);
 
         assertNotNull(result);
         assertEquals("Updated Name", result.getName());
@@ -157,7 +163,7 @@ class EmployeeServiceTest {
         when(repo.findById(99L)).thenReturn(Optional.empty());
 
         RuntimeException ex = assertThrows(RuntimeException.class,
-                () -> service.update(99L, sampleDto()));
+                () -> service.update(99L, sampleDto(), SAMPLE_XML));
         assertTrue(ex.getMessage().contains("99"));
     }
 
@@ -165,11 +171,9 @@ class EmployeeServiceTest {
     void testDelete_success() {
         when(repo.existsById(1L)).thenReturn(true);
         doNothing().when(repo).deleteById(1L);
-        when(auditRepo.save(any())).thenReturn(new AuditLog());
-        doNothing().when(publisher).publish(anyLong(), anyString());
+        doNothing().when(publisher).publish(anyLong(), anyString(), anyString(), anyString());
 
         assertDoesNotThrow(() -> service.delete(1L));
-
         verify(repo, times(1)).deleteById(1L);
     }
 

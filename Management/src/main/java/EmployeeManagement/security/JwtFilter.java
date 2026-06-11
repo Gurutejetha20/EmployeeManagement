@@ -4,7 +4,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class JwtFilter extends OncePerRequestFilter {
@@ -32,22 +32,13 @@ public class JwtFilter extends OncePerRequestFilter {
         String method = request.getMethod();
         String uri    = request.getRequestURI();
 
-        System.out.println("[JwtFilter] " + method + " " + uri
-                + " | Auth: " + request.getHeader("Authorization"));
-
-       
         if ("OPTIONS".equalsIgnoreCase(method)) {
             response.setStatus(HttpServletResponse.SC_OK);
             chain.doFilter(request, response);
             return;
         }
 
-        if (uri.startsWith("/auth")) {
-            chain.doFilter(request, response);
-            return;
-        }
-
-        if (uri.equals("/ping")) {
+        if (uri.startsWith("/auth") || uri.equals("/ping")) {
             chain.doFilter(request, response);
             return;
         }
@@ -55,10 +46,9 @@ public class JwtFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("[JwtFilter] REJECTED — no Bearer token for: " + uri);
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Missing Authorization header\"}");
+            writeError(response, HttpServletResponse.SC_UNAUTHORIZED,
+                    "TOKEN_MISSING",
+                    "Authorization token is missing. Please log in.");
             return;
         }
 
@@ -66,26 +56,39 @@ public class JwtFilter extends OncePerRequestFilter {
 
         try {
             if (!jwtUtil.validate(token)) {
-                throw new RuntimeException("Token expired");
+                writeError(response, HttpServletResponse.SC_UNAUTHORIZED,
+                        "TOKEN_EXPIRED",
+                        "Your session has expired. Please log in again.");
+                return;
             }
             String username = jwtUtil.extractUsername(token);
             UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                    username,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
-                );
+                    new UsernamePasswordAuthenticationToken(
+                            username, null,
+                            List.of(new SimpleGrantedAuthority("ROLE_USER")));
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            System.out.println("[JwtFilter] Token VALID — passing through to: " + uri);
         } catch (Exception e) {
-            System.out.println("[JwtFilter] Token INVALID: " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Invalid or expired token\"}");
+            writeError(response, HttpServletResponse.SC_UNAUTHORIZED,
+                    "UNAUTHORIZED",
+                    "Invalid or expired token. Please log in again.");
             return;
         }
 
         chain.doFilter(request, response);
+    }
+
+    private void writeError(HttpServletResponse response, int status,
+                            String errorCode, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.getWriter().write(
+            "{" +
+            "\"status\":" + status + "," +
+            "\"errorCode\":\"" + errorCode + "\"," +
+            "\"message\":\"" + message + "\"," +
+            "\"timestamp\":\"" + LocalDateTime.now() + "\"" +
+            "}"
+        );
     }
 }
