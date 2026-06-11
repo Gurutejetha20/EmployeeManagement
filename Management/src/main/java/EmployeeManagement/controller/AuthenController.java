@@ -28,7 +28,7 @@ public class AuthenController {
             throw AppException.invalidInput("Username and password are required.");
         }
         if (userRepository.existsByUsername(username.trim())) {
-            throw AppException.emailDuplicate(username.trim());  // reusing conflict factory
+            throw AppException.emailDuplicate(username.trim()); 
         }
 
         User user = new User(username.trim(), encoder.encode(password), "USER");
