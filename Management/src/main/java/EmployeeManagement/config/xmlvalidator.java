@@ -23,6 +23,9 @@ public class xmlvalidator {
         } catch (Exception e) {
             throw AppException.invalidXml(e.getMessage());
         }
+//        catch( NullPointerException e) {
+//        	
+//        }
     }
 
     public Employeedto convert(String xml) {
